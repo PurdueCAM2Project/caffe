@@ -272,6 +272,7 @@ if max_iter == 0:
 name_size_file = "data/coco/minival2014_name_size.txt"
 # The resume model.
 pretrain_model = "{}_iter_{}.caffemodel".format(snapshot_prefix, max_iter)
+#pretrain_model = "{}_iter_{}.caffemodel".format(snapshot_prefix, max_iter)
 # Stores LabelMapItem.
 label_map_file = "data/coco/labelmap_coco.prototxt"
 

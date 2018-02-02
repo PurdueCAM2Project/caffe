@@ -12,6 +12,7 @@
 //    folder/video1.mp4
 //    folder/video2.mp4
 //
+#define USE_OPENCV 1
 #include <caffe/caffe.hpp>
 #ifdef USE_OPENCV
 #include <opencv2/core/core.hpp>
@@ -269,7 +270,9 @@ int main(int argc, char** argv) {
   const float confidence_threshold = FLAGS_confidence_threshold;
 
   // Initialize the network.
+  std::cout << "A" << std::endl;
   Detector detector(model_file, weights_file, mean_file, mean_value);
+  std::cout << "B" << std::endl;
 
   // Set the output mode.
   std::streambuf* buf = std::cout.rdbuf();
@@ -281,16 +284,20 @@ int main(int argc, char** argv) {
     }
   }
   std::ostream out(buf);
+  std::cout << "C" << std::endl;
 
   // Process image one by one.
   std::ifstream infile(argv[3]);
   std::string file;
+  std::cout << "D" << std::endl;
   while (infile >> file) {
     if (file_type == "image") {
+      std::cout << "E" << std::endl;
       cv::Mat img = cv::imread(file, -1);
       CHECK(!img.empty()) << "Unable to decode image " << file;
+      std::cout << "F" << std::endl;
       std::vector<vector<float> > detections = detector.Detect(img);
-
+      std::cout << "G" << std::endl;
       /* Print the detection results. */
       for (int i = 0; i < detections.size(); ++i) {
         const vector<float>& d = detections[i];

@@ -16,15 +16,15 @@ height=0
 extra_cmd="--encode-type=jpg --encoded"
 if $redo
 then
-  extra_cmd="$extra_cmd --redo"
+    extra_cmd="$extra_cmd --redo"
 fi
 
 for dataset in test
 do
-  python $root_dir/scripts/create_annoset.py --anno-type="classification" --label-map-file=$mapfile --min-dim=$min_dim --max-dim=$max_dim --resize-width=$width --resize-height=$height --check-label $extra_cmd $data_root_dir $root_dir/data/$dataset_name/$dataset".txt" $data_root_dir/$db/DET/$dataset_name"_"$dataset"_"$db examples/$dataset_name 2>&1 | tee $root_dir/data/$dataset_name/$dataset.log
+    python $root_dir/scripts/create_annoset.py --anno-type="classification" --label-map-file=$mapfile --min-dim=$min_dim --max-dim=$max_dim --resize-width=$width --resize-height=$height --check-label $extra_cmd $data_root_dir $root_dir/data/$dataset_name/$dataset".txt" $data_root_dir/$db/DET/$dataset_name"_"$dataset"_"$db examples/$dataset_name 2>&1 | tee $root_dir/data/$dataset_name/$dataset.log
 done
 
 for dataset in val2 trainval1
 do
-  python $root_dir/scripts/create_annoset.py --anno-type="detection" --label-map-file=$mapfile --min-dim=$min_dim --max-dim=$max_dim --resize-width=$width --resize-height=$height --check-label $extra_cmd $data_root_dir $root_dir/data/$dataset_name/$dataset".txt" $data_root_dir/$db/DET/$dataset_name"_"$dataset"_"$db examples/$dataset_name 2>&1 | tee $root_dir/data/$dataset_name/$dataset.log
+    python $root_dir/scripts/create_annoset.py --anno-type="detection" --label-map-file=$mapfile --min-dim=$min_dim --max-dim=$max_dim --resize-width=$width --resize-height=$height --check-label $extra_cmd $data_root_dir $root_dir/data/$dataset_name/$dataset".txt" $data_root_dir/$db/DET/$dataset_name"_"$dataset"_"$db examples/$dataset_name 2>&1 | tee $root_dir/data/$dataset_name/$dataset.log
 done

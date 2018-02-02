@@ -12,6 +12,13 @@ template <typename Dtype>
 void MultiBoxLossLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::LayerSetUp(bottom, top);
+  for(int j = 0; j < bottom.size(); j++){
+    int max = bottom[j]->num_axes();
+    for(int i = 0; i < max; i++){
+      fprintf(stdout,"bottom[%d]->shape(%d) = %d\n",j,i,bottom[j]->shape(i));
+    }
+  }
+
   if (this->layer_param_.propagate_down_size() == 0) {
     this->layer_param_.add_propagate_down(true);
     this->layer_param_.add_propagate_down(true);
@@ -145,6 +152,7 @@ void MultiBoxLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void MultiBoxLossLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
+
   const Dtype* loc_data = bottom[0]->cpu_data();
   const Dtype* conf_data = bottom[1]->cpu_data();
   const Dtype* prior_data = bottom[2]->cpu_data();

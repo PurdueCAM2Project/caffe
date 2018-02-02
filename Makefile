@@ -178,9 +178,12 @@ ifneq ($(CPU_ONLY), 1)
 	LIBRARIES := cudart cublas curand
 endif
 
-LIBRARIES += glog gflags protobuf boost_system boost_filesystem boost_regex m hdf5_hl hdf5
+LIBRARIES += glog gflags protobuf leveldb snappy lmdb boost_system boost_filesystem hdf5_hl hdf5 m opencv_core opencv_highgui opencv_imgproc opencv_imgcodecs opencv_videoio boost_regex
+#LIBRARIES += glog gflags protobuf boost_system boost_filesystem m hdf5_serial_hl hdf5_serial
+#-lglog -lgflags -lprotobuf -lleveldb -lsnappy -llmdb -lboost_system -l -lboost_filesystem -lhdf5_hl -lhdf5 -lm -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -lopencv_videoio
 
-# handle IO dependencies
+
+# -lhandle IO dependencies
 USE_LEVELDB ?= 1
 USE_LMDB ?= 1
 USE_OPENCV ?= 1
@@ -404,9 +407,11 @@ LIBRARY_DIRS += $(LIB_BUILD_DIR)
 CXXFLAGS += -MMD -MP
 
 # Complete build flags.
-COMMON_FLAGS += $(foreach includedir,$(INCLUDE_DIRS),-isystem $(includedir))
+#COMMON_FLAGS += $(foreach includedir,$(INCLUDE_DIRS),-isystem $(includedir))
+COMMON_FLAGS += $(foreach includedir,$(INCLUDE_DIRS),-I $(includedir))
 CXXFLAGS += -pthread -fPIC $(COMMON_FLAGS) $(WARNINGS)
-NVCCFLAGS += -ccbin=$(CXX) -Xcompiler -fPIC $(COMMON_FLAGS)
+NVCCFLAGS += -D_FORCE_INLINES -ccbin=$(CXX) -Xcompiler -fPIC $(COMMON_FLAGS)
+#NVCCFLAGS += -ccbin=$(CXX) -Xcompiler -fPIC $(COMMON_FLAGS)
 # mex may invoke an older gcc that is too liberal with -Wuninitalized
 MATLAB_CXXFLAGS := $(CXXFLAGS) -Wno-uninitialized
 LINKFLAGS += -pthread -fPIC $(COMMON_FLAGS) $(WARNINGS)
@@ -564,6 +569,7 @@ $(ALL_BUILD_DIRS): | $(BUILD_DIR_LINK)
 
 $(DYNAMIC_NAME): $(OBJS) | $(LIB_BUILD_DIR)
 	@ echo LD -o $@
+	@ echo $(Q)$(CXX) -shared -o $@ $(OBJS) $(VERSIONFLAGS) $(LINKFLAGS) $(LDFLAGS)
 	$(Q)$(CXX) -shared -o $@ $(OBJS) $(VERSIONFLAGS) $(LINKFLAGS) $(LDFLAGS)
 	@ cd $(BUILD_DIR)/lib; rm -f $(DYNAMIC_NAME_SHORT);   ln -s $(DYNAMIC_VERSIONED_NAME_SHORT) $(DYNAMIC_NAME_SHORT)
 
@@ -573,6 +579,8 @@ $(STATIC_NAME): $(OBJS) | $(LIB_BUILD_DIR)
 
 $(BUILD_DIR)/%.o: %.cpp | $(ALL_BUILD_DIRS)
 	@ echo CXX $<
+	@ echo $(Q)$(CXX) $< $(CXXFLAGS) -c -o $@ 2> $@.$(WARNS_EXT) \
+		|| (cat $@.$(WARNS_EXT); exit 1)
 	$(Q)$(CXX) $< $(CXXFLAGS) -c -o $@ 2> $@.$(WARNS_EXT) \
 		|| (cat $@.$(WARNS_EXT); exit 1)
 	@ cat $@.$(WARNS_EXT)
@@ -580,12 +588,18 @@ $(BUILD_DIR)/%.o: %.cpp | $(ALL_BUILD_DIRS)
 $(PROTO_BUILD_DIR)/%.pb.o: $(PROTO_BUILD_DIR)/%.pb.cc $(PROTO_GEN_HEADER) \
 		| $(PROTO_BUILD_DIR)
 	@ echo CXX $<
+	@ echo $(Q)$(CXX) $< $(CXXFLAGS) -c -o $@ 2> $@.$(WARNS_EXT) \
+		|| (cat $@.$(WARNS_EXT); exit 1)
 	$(Q)$(CXX) $< $(CXXFLAGS) -c -o $@ 2> $@.$(WARNS_EXT) \
 		|| (cat $@.$(WARNS_EXT); exit 1)
 	@ cat $@.$(WARNS_EXT)
 
 $(BUILD_DIR)/cuda/%.o: %.cu | $(ALL_BUILD_DIRS)
 	@ echo NVCC $<
+	@ echo $(Q)$(CUDA_DIR)/bin/nvcc $(NVCCFLAGS) $(CUDA_ARCH) -M $< -o ${@:.o=.d} \
+		-odir $(@D)
+	@ echo $(Q)$(CUDA_DIR)/bin/nvcc $(NVCCFLAGS) $(CUDA_ARCH) -c $< -o $@ 2> $@.$(WARNS_EXT) \
+		|| (cat $@.$(WARNS_EXT); exit 1)
 	$(Q)$(CUDA_DIR)/bin/nvcc $(NVCCFLAGS) $(CUDA_ARCH) -M $< -o ${@:.o=.d} \
 		-odir $(@D)
 	$(Q)$(CUDA_DIR)/bin/nvcc $(NVCCFLAGS) $(CUDA_ARCH) -c $< -o $@ 2> $@.$(WARNS_EXT) \
@@ -617,6 +631,8 @@ $(TOOL_BUILD_DIR)/%: $(TOOL_BUILD_DIR)/%.bin | $(TOOL_BUILD_DIR)
 
 $(TOOL_BINS): %.bin : %.o | $(DYNAMIC_NAME)
 	@ echo CXX/LD -o $@
+	@ echo $(Q)$(CXX) $< -o $@ $(LINKFLAGS) -l$(LIBRARY_NAME) $(LDFLAGS) \
+		-Wl,-rpath,$(ORIGIN)/../lib
 	$(Q)$(CXX) $< -o $@ $(LINKFLAGS) -l$(LIBRARY_NAME) $(LDFLAGS) \
 		-Wl,-rpath,$(ORIGIN)/../lib
 
@@ -630,6 +646,7 @@ proto: $(PROTO_GEN_CC) $(PROTO_GEN_HEADER)
 $(PROTO_BUILD_DIR)/%.pb.cc $(PROTO_BUILD_DIR)/%.pb.h : \
 		$(PROTO_SRC_DIR)/%.proto | $(PROTO_BUILD_DIR)
 	@ echo PROTOC $<
+	@ echo $(Q)protoc --proto_path=$(PROTO_SRC_DIR) --cpp_out=$(PROTO_BUILD_DIR) $<
 	$(Q)protoc --proto_path=$(PROTO_SRC_DIR) --cpp_out=$(PROTO_BUILD_DIR) $<
 
 $(PY_PROTO_BUILD_DIR)/%_pb2.py : $(PROTO_SRC_DIR)/%.proto \

@@ -437,7 +437,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 147 (last added: recurrent_param)
+// LayerParameter next available layer-specific ID: 148 (last added: yolo_loss_layer)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -532,16 +532,20 @@ message LayerParameter {
   optional ReductionParameter reduction_param = 136;
   optional ReLUParameter relu_param = 123;
   optional ReshapeParameter reshape_param = 133;
+  optional ROIPoolingParameter roi_pooling_param = 8266711;
   optional ScaleParameter scale_param = 142;
   optional SigmoidParameter sigmoid_param = 124;
   optional SoftmaxParameter softmax_param = 125;
   optional SPPParameter spp_param = 132;
   optional SliceParameter slice_param = 126;
+  optional SmoothL1LossParameter smooth_l1_loss_param = 8266712;
   optional TanHParameter tanh_param = 127;
   optional ThresholdParameter threshold_param = 128;
   optional TileParameter tile_param = 138;
   optional VideoDataParameter video_data_param = 207;
   optional WindowDataParameter window_data_param = 129;
+  optional YoloLossParameter yolo_loss_param = 147;
+  optional AnnotatedDatum annotated_datum_param = 148;
 }
 
 // Message that stores parameters used to apply transformation
@@ -1567,6 +1571,17 @@ message ReshapeParameter {
   optional int32 num_axes = 3 [default = -1];
 }
 
+// Message that stores parameters used by ROIPoolingLayer
+message ROIPoolingParameter {
+  // Pad, kernel size, and stride are all given as a single value for equal
+  // dimensions in height and width or as Y, X pairs.
+  optional uint32 pooled_h = 1 [default = 0]; // The pooled output height
+  optional uint32 pooled_w = 2 [default = 0]; // The pooled output width
+  // Multiplicative spatial scale factor to translate ROI coords from their
+  // input scale to the scale used when pooling
+  optional float spatial_scale = 3 [default = 1];
+}
+
 message ScaleParameter {
   // The first axis of bottom[0] (the first input Blob) along which to apply
   // bottom[1] (the second input Blob).  May be negative to index from the end
@@ -1611,6 +1626,13 @@ message SigmoidParameter {
     CUDNN = 2;
   }
   optional Engine engine = 1 [default = DEFAULT];
+}
+
+message SmoothL1LossParameter {
+  // SmoothL1Loss(x) =
+  //   0.5 * (sigma * x) ** 2    -- if x < 1.0 / sigma / sigma
+  //   |x| - 0.5 / sigma / sigma -- otherwise
+  optional float sigma = 1 [default = 1];
 }
 
 message SliceParameter {
@@ -1705,6 +1727,78 @@ message WindowDataParameter {
   optional bool cache_images = 12 [default = false];
   // append root_folder to locate images
   optional string root_folder = 13 [default = ""];
+}
+
+
+message YoloLossParameter {
+  // Localization loss type.
+  enum LocLossType {
+    L2 = 0;
+    SMOOTH_L1 = 1;
+  }
+  optional LocLossType loc_loss_type = 1 [default = SMOOTH_L1];
+  // Confidence loss type.
+  enum ConfLossType {
+    SOFTMAX = 0;
+    LOGISTIC = 1;
+  }
+  optional ConfLossType conf_loss_type = 2 [default = SOFTMAX];
+  // Weight for localization loss.
+  optional float loc_weight = 3 [default = 1.0];
+  // Number of classes to be predicted. Required!
+  optional uint32 num_classes = 4;
+  // If true, bounding box are shared among different classes.
+  optional bool share_location = 5 [default = true];
+  // Matching method during training.
+  enum MatchType {
+    BIPARTITE = 0;
+    PER_PREDICTION = 1;
+  }
+  optional MatchType match_type = 6 [default = PER_PREDICTION];
+  // If match_type is PER_PREDICTION, use overlap_threshold to
+  // determine the extra matching bboxes.
+  optional float overlap_threshold = 7 [default = 0.5];
+  // Use prior for matching.
+  optional bool use_prior_for_matching = 8 [default = true];
+  // Background label id.
+  optional uint32 background_label_id = 9 [default = 0];
+  // If true, also consider difficult ground truth.
+  optional bool use_difficult_gt = 10 [default = true];
+  // If true, perform negative mining.
+  // DEPRECATED: use mining_type instead.
+  optional bool do_neg_mining = 11;
+  // The negative/positive ratio.
+  optional float neg_pos_ratio = 12 [default = 3.0];
+  // The negative overlap upperbound for the unmatched predictions.
+  optional float neg_overlap = 13 [default = 0.5];
+  // Type of coding method for bbox.
+  optional PriorBoxParameter.CodeType code_type = 14 [default = CORNER];
+  // If true, encode the variance of prior box in the loc loss target instead of
+  // in bbox.
+  optional bool encode_variance_in_target = 16 [default = false];
+  // If true, map all object classes to agnostic class. It is useful for learning
+  // objectness detector.
+  optional bool map_object_to_agnostic = 17 [default = false];
+  // If true, ignore cross boundary bbox during matching.
+  // Cross boundary bbox is a bbox who is outside of the image region.
+  optional bool ignore_cross_boundary_bbox = 18 [default = false];
+  // If true, only backpropagate on corners which are inside of the image
+  // region when encode_type is CORNER or CORNER_SIZE.
+  optional bool bp_inside = 19 [default = false];
+  // Mining type during training.
+  //   NONE : use all negatives.
+  //   MAX_NEGATIVE : select negatives based on the score.
+  //   HARD_EXAMPLE : select hard examples based on "Training Region-based Object Detectors with Online Hard Example Mining", Shrivastava et.al.
+  enum MiningType {
+    NONE = 0;
+    MAX_NEGATIVE = 1;
+    HARD_EXAMPLE = 2;
+  }
+  optional MiningType mining_type = 20 [default = MAX_NEGATIVE];
+  // Parameters used for non maximum suppression durig hard example mining.
+  optional NonMaximumSuppressionParameter nms_param = 21;
+  optional int32 sample_size = 22 [default = 64];
+  optional bool use_prior_for_nms = 23 [default = false];
 }
 
 message SPPParameter {

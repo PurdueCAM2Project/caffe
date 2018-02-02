@@ -21,6 +21,9 @@
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
+#include "boost/scoped_ptr.hpp"
+#include "boost/filesystem.hpp"
+
 #include "caffe/util/io.hpp"
 
 using namespace caffe;  // NOLINT(build/namespaces)

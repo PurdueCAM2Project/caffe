@@ -214,6 +214,9 @@ def CreateAnnotatedDataLayer(source, batch_size=32, backend=P.Data.LMDB,
     return L.AnnotatedData(name="data", annotated_data_param=annotated_data_param,
         data_param=dict(batch_size=batch_size, backend=backend, source=source),
         ntop=ntop, **kwargs)
+    # return L.AnnotatedData(name="data", annotated_data_param=annotated_data_param,
+    #     data_param=dict(batch_size=batch_size, backend=backend, source=source),
+    #     ntop=ntop, **kwargs)
 
 
 def ZFNetBody(net, from_layer, need_fc=True, fully_conv=False, reduced=False,

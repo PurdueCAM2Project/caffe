@@ -4,7 +4,7 @@ root_dir=$cur_dir/../..
 cd $root_dir
 
 redo=false
-data_root_dir="$HOME/data/coco"
+data_root_dir="$HOME/Documents/data/coco"
 dataset_name="coco"
 mapfile="$root_dir/data/$dataset_name/labelmap_coco.prototxt"
 anno_type="detection"

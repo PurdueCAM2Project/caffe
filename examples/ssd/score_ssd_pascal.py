@@ -77,9 +77,11 @@ caffe_root = os.getcwd()
 run_soon = True
 
 # The database file for training data. Created by data/VOC0712/create_data.sh
-train_data = "examples/VOC0712/VOC0712_trainval_lmdb"
+train_data = "/home/gauenk/Documents/data/pascal_voc/VOCdevkit/VOC0712/lmdb/VOC0712_trainval_lmdb"
 # The database file for testing data. Created by data/VOC0712/create_data.sh
-test_data = "examples/VOC0712/VOC0712_test_lmdb"
+#test_data = "examples/VOC0712/VOC0712_test_lmdb"
+#test_data = "/home/gauenk/Documents/data/pascal_voc/VOCdevkit/VOC2007/JPEGImages/"
+test_data= "/home/gauenk/Documents/data/pascal_voc/VOCdevkit/VOC0712/lmdb/VOC0712_trainval_lmdb"
 # Specify the batch sampler.
 resize_width = 300
 resize_height = 300
@@ -244,6 +246,7 @@ job_dir = "jobs/VGGNet/VOC0712/{}_score".format(job_name)
 output_result_dir = "{}/data/VOCdevkit/results/VOC2007/{}_score/Main".format(os.environ['HOME'], job_name)
 
 # model definition files.
+print(save_dir)
 train_net_file = "{}/train.prototxt".format(save_dir)
 test_net_file = "{}/test.prototxt".format(save_dir)
 deploy_net_file = "{}/deploy.prototxt".format(save_dir)
@@ -340,7 +343,7 @@ clip = False
 
 # Solver parameters.
 # Defining which GPUs to use.
-gpus = "0"
+gpus = "1"
 gpulist = gpus.split(",")
 num_gpus = len(gpulist)
 
@@ -461,6 +464,7 @@ net[name] = L.MultiBoxLoss(*mbox_layers, multibox_loss_param=multibox_loss_param
         loss_param=loss_param, include=dict(phase=caffe_pb2.Phase.Value('TRAIN')),
         propagate_down=[True, True, False, False])
 
+print(train_net_file,"TRAIN\n\n\n\n\n\n")
 with open(train_net_file, 'w') as f:
     print('name: "{}_train"'.format(model_name), file=f)
     print(net.to_proto(), file=f)
@@ -504,6 +508,7 @@ net.detection_eval = L.DetectionEvaluate(net.detection_out, net.label,
     detection_evaluate_param=det_eval_param,
     include=dict(phase=caffe_pb2.Phase.Value('TEST')))
 
+print(test_net_file)
 with open(test_net_file, 'w') as f:
     print('name: "{}_test"'.format(model_name), file=f)
     print(net.to_proto(), file=f)
@@ -525,6 +530,7 @@ with open(deploy_net_file, 'w') as f:
 shutil.copy(deploy_net_file, job_dir)
 
 # Create solver.
+print("SOLVER",solver_file)
 solver = caffe_pb2.SolverParameter(
         train_net=train_net_file,
         test_net=[test_net_file],

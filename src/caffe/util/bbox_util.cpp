@@ -2081,6 +2081,82 @@ void ComputeAP(const vector<pair<float, int> >& tp, const int num_pos,
   }
 }
 
+// loc_data = cpu_data()
+// num_bboxes = # of predicted bounding boxes in total for a single image
+// loc_size = # of floating point values at location x --> (num_classes + k)*5
+// num = # of images in batch
+// k_ = # of bbox shapes per location
+// num_classes = # of classes
+// result_side_size = length of side of output: if 416 image input, then 13
+// loc_preds = output from function of bounding boxes
+
+template <typename Dtype>
+void GetLocConfPredictions_yolo(const Dtype* loc_data, const int num_bboxes,
+			    const int loc_size,
+			    const int num, const int k_, const int num_classes,
+			    const int result_side_size,
+			    vector<vector<NormalizedBBox> >* loc_preds,
+			    vector<ConfMap>* conf_preds) {
+
+  // loc_data = cpu_data()
+  // num_bboxes = # of predicted bounding boxes in total for a single image
+  // loc_size = # of floating point values at location x --> (num_classes + k)*5
+  // num = # of images in batch
+  // k_ = # of bbox shapes per location
+  // num_classes = # of classes
+  // result_side_size = length of side of output: if 416 image input, then 13
+  // loc_preds = output from function of bounding boxes
+
+  //fprintf(stdout,"num_bboxes: %d, loc_size: %d, num: %d\nk_: %d, num_classes: %d, result_side_size: %d\n",num_bboxes,loc_size,num,k_,num_classes,result_side_size);
+  loc_preds->clear();
+  loc_preds->resize(num);
+  conf_preds->clear();
+  conf_preds->resize(num);
+
+  int total_size;
+  int result_sides = std::pow(result_side_size,2);
+  int num_per_bbox = num_classes + 5;
+  for (int i = 0; i < num; ++i) { // for each image
+    vector<NormalizedBBox>& label_bbox = (*loc_preds)[i];
+    label_bbox.resize(num_bboxes);
+    ConfMap& conf_bbox = (*conf_preds)[i];
+    for (int r = 0; r < result_sides; ++r) {
+      int start_idx = r * result_sides;
+      int bbox_idx = r * k_;
+      for (int k = 0; k < k_; ++k){ // for each bounding box
+	label_bbox[bbox_idx + k].set_xmin(loc_data[start_idx + num_per_bbox * k]);
+	label_bbox[bbox_idx + k].set_xmax(loc_data[start_idx + num_per_bbox * k + 1]);
+	label_bbox[bbox_idx + k].set_ymin(loc_data[start_idx + num_per_bbox * k + 2]);
+	label_bbox[bbox_idx + k].set_ymax(loc_data[start_idx + num_per_bbox * k + 3]);
+	label_bbox[bbox_idx + k].set_score(loc_data[start_idx + num_per_bbox * k + 4]);
+	conf_bbox[bbox_idx + k] = vector<float>(num_classes);
+	for (int c = 5; c < num_classes+5; ++c){ // offset by 5 for bounding box
+	  //set the confidences here
+	  conf_bbox[bbox_idx + k][c-5] = loc_data[start_idx + num_per_bbox * k + c];
+	}
+      }
+    }
+    // incriment for each image in the batch
+    loc_data += result_sides * loc_size;
+  }
+}
+
+// Explicit initialization.
+template void GetLocConfPredictions_yolo(const float* loc_data, const int num_bboxes,
+			    const int loc_size,
+			    const int num, const int k_, const int num_classes,
+			    const int result_side_size,
+			    vector<vector<NormalizedBBox> >* loc_preds,
+					 vector<ConfMap>* conf_preds);
+
+template void GetLocConfPredictions_yolo(const double* loc_data, const int num_bboxes,
+			    const int loc_size,
+			    const int num, const int k_, const int num_classes,
+			    const int result_side_size,
+			    vector<vector<NormalizedBBox> >* loc_preds,
+					 vector<ConfMap>* conf_preds);
+
+
 #ifdef USE_OPENCV
 cv::Scalar HSV2RGB(const float h, const float s, const float v) {
   const int h_i = static_cast<int>(h * 6);

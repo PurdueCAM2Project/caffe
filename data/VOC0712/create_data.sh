@@ -1,10 +1,14 @@
 cur_dir=$(cd $( dirname ${BASH_SOURCE[0]} ) && pwd )
 root_dir=$cur_dir/../..
 
+echo $( dirname ${BASH_SOURCE[0]} )
+echo ${BASH_SOURCE[0]}
+echo $cur_dir
+echo $root_dir
 cd $root_dir
 
 redo=1
-data_root_dir="$HOME/data/VOCdevkit"
+data_root_dir="$HOME/Documents/data/pascal_voc/VOCdevkit"
 dataset_name="VOC0712"
 mapfile="$root_dir/data/$dataset_name/labelmap_voc.prototxt"
 anno_type="detection"
@@ -21,5 +25,5 @@ then
 fi
 for subset in test trainval
 do
-  python $root_dir/scripts/create_annoset.py --anno-type=$anno_type --label-map-file=$mapfile --min-dim=$min_dim --max-dim=$max_dim --resize-width=$width --resize-height=$height --check-label $extra_cmd $data_root_dir $root_dir/data/$dataset_name/$subset.txt $data_root_dir/$dataset_name/$db/$dataset_name"_"$subset"_"$db examples/$dataset_name
+  python2 $root_dir/scripts/create_annoset.py --anno-type=$anno_type --label-map-file=$mapfile --min-dim=$min_dim --max-dim=$max_dim --resize-width=$width --resize-height=$height --check-label $extra_cmd $data_root_dir $root_dir/data/$dataset_name/$subset.txt $data_root_dir/$dataset_name/$db/$dataset_name"_"$subset"_"$db examples/$dataset_name
 done

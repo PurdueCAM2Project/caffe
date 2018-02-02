@@ -27,7 +27,13 @@ typedef MultiBoxLossParameter_LocLossType LocLossType;
 typedef MultiBoxLossParameter_ConfLossType ConfLossType;
 typedef MultiBoxLossParameter_MiningType MiningType;
 
+typedef YoloLossParameter_MatchType yolo_MatchType;
+typedef YoloLossParameter_LocLossType yolo_LocLossType;
+typedef YoloLossParameter_ConfLossType yolo_ConfLossType;
+typedef YoloLossParameter_MiningType yolo_MiningType;
+
 typedef map<int, vector<NormalizedBBox> > LabelBBox;
+typedef map<int, vector<float> > ConfMap;
 
 // Function used to sort NormalizedBBox, stored in STL container (e.g. vector),
 // in ascend order based on the score value.
@@ -160,6 +166,14 @@ void FindMatches(const vector<LabelBBox>& all_loc_preds,
       vector<map<int, vector<float> > >* all_match_overlaps,
       vector<map<int, vector<int> > >* all_match_indices);
 
+void FindMatches(const vector<LabelBBox>& all_loc_preds,
+      const map<int, vector<NormalizedBBox> >& all_gt_bboxes,
+      const vector<NormalizedBBox>& prior_bboxes,
+      const vector<vector<float> >& prior_variances,
+      const YoloLossParameter& yolo_loss_param,
+      vector<map<int, vector<float> > >* all_match_overlaps,
+      vector<map<int, vector<int> > >* all_match_indices);
+
 // Count the number of matches from the match indices.
 int CountNumMatches(const vector<map<int, vector<int> > >& all_match_indices,
                     const int num);
@@ -217,6 +231,21 @@ template <typename Dtype>
 void GetLocPredictions(const Dtype* loc_data, const int num,
       const int num_preds_per_class, const int num_loc_classes,
       const bool share_location, vector<LabelBBox>* loc_preds);
+
+// Get location predictions from loc_data for the yolo model.
+//    loc_data: num x num_bboxes x result_side_length x result_side_length
+//    num: the number of images.
+//    num_preds_per_class: number of predictions per class.
+//    num_loc_classes: number of location classes. It is 1 if share_location is
+//      true; and is equal to number of classes needed to predict otherwise.
+//    share_location: if true, all classes share the same location prediction.
+//    loc_preds: stores the location prediction, where each item contains
+//      location prediction for an image.
+template <typename Dtype>
+void GetLocConfPredictions_yolo(const Dtype* loc_data, const int num_bboxes,
+       const int loc_size, const int num, const int k_, const int num_classes,
+       const int result_side_size, vector<vector<NormalizedBBox> >* loc_preds,
+       vector<ConfMap>* conf_preds);
 
 // Encode the localization prediction and ground truth for each matched prior.
 //    all_loc_preds: stores the location prediction, where each item contains

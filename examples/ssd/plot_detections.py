@@ -107,8 +107,11 @@ if __name__ == "__main__":
     img_results = OrderedDict()
     with open(result_file, "r") as f:
         for line in f.readlines():
-            img_name, label, score, xmin, ymin, xmax, ymax = line.strip("\n").split()
-            img_file = "{}/{}".format(img_dir, img_name)
+            #img_name, label, score, xmin, ymin, xmax, ymax = line.strip("\n").split()
+            # kent edit
+            img_name, score, xmin, ymin, xmax, ymax = line.strip("\n").split()
+            label = 1
+            img_file = "{}/{}.jpg".format(img_dir, img_name)
             result = dict()
             result["label"] = int(label)
             result["score"] = float(score)

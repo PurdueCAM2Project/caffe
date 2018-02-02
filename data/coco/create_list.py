@@ -11,7 +11,7 @@ CURDIR = os.path.dirname(os.path.realpath(__file__))
 # If true, re-create all list files.
 redo = True
 # The root directory which holds all information of the dataset.
-data_dir = "{}/data/coco".format(HOMEDIR)
+data_dir = "{}/Documents/data/coco".format(HOMEDIR)
 # The directory name which holds the image sets.
 imgset_dir = "ImageSets"
 # The direcotry which contains the images.
