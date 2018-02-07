@@ -178,7 +178,7 @@ ifneq ($(CPU_ONLY), 1)
 	LIBRARIES := cudart cublas curand
 endif
 
-LIBRARIES += glog gflags protobuf leveldb snappy lmdb boost_system boost_filesystem hdf5_hl hdf5 m opencv_core opencv_highgui opencv_imgproc opencv_imgcodecs opencv_videoio boost_regex
+LIBRARIES += glog gflags protobuf leveldb snappy lmdb boost_system boost_filesystem hdf5_hl hdf5 m opencv_core opencv_highgui opencv_imgproc boost_regex
 #LIBRARIES += glog gflags protobuf boost_system boost_filesystem m hdf5_serial_hl hdf5_serial
 #-lglog -lgflags -lprotobuf -lleveldb -lsnappy -llmdb -lboost_system -l -lboost_filesystem -lhdf5_hl -lhdf5 -lm -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_imgcodecs -lopencv_videoio
 
