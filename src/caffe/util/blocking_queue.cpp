@@ -1,7 +1,6 @@
 #include <boost/thread.hpp>
 #include <string>
 
-#include "caffe/data_reader.hpp"
 #include "caffe/layers/base_data_layer.hpp"
 #include "caffe/parallel.hpp"
 #include "caffe/util/blocking_queue.hpp"
