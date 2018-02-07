@@ -3,13 +3,14 @@
 
 #include <vector>
 
+#include "caffe/proto/caffe.pb.h"
 #include "caffe/blob.hpp"
 #include "caffe/data_transformer.hpp"
 #include "caffe/internal_thread.hpp"
 #include "caffe/layer.hpp"
 #include "caffe/layers/base_data_layer.hpp"
-#include "caffe/proto/caffe.pb.h"
 #include "caffe/util/db.hpp"
+//#include "caffe/data_reader.hpp"
 
 namespace caffe {
 
@@ -30,7 +31,7 @@ class DataLayer : public BasePrefetchingDataLayer<Dtype> {
   bool Skip();
   virtual void load_batch(Batch<Dtype>* batch);
 
-  DataReader<Datum> reader_;
+  //DataReader<Datum> reader_;
   shared_ptr<db::DB> db_;
   shared_ptr<db::Cursor> cursor_;
   uint64_t offset_;
