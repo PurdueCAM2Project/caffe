@@ -94,6 +94,8 @@ class Solver {
    */
   virtual inline const char* type() const { return ""; }
 
+  virtual void SnapshotSolverState(const string& model_filename) = 0;
+
  protected:
   // Make and apply the update value for the current iteration.
   virtual void ApplyUpdate() = 0;
@@ -104,7 +106,6 @@ class Solver {
   void TestAll();
   void TestClassification(const int test_net_id = 0);
   void TestDetection(const int test_net_id = 0);
-  virtual void SnapshotSolverState(const string& model_filename) = 0;
   virtual void RestoreSolverStateFromHDF5(const string& state_file) = 0;
   virtual void RestoreSolverStateFromBinaryProto(const string& state_file) = 0;
   void DisplayOutputBlobs(const int net_id);

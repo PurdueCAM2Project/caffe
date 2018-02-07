@@ -341,10 +341,12 @@ template <typename Dtype>
 void SGDSolver<Dtype>::RestoreSolverStateFromBinaryProto(
     const string& state_file) {
   SolverState state;
+  std::cout << state_file << std::endl;
   ReadProtoFromBinaryFile(state_file, &state);
   this->iter_ = state.iter();
   if (state.has_learned_net()) {
     NetParameter net_param;
+    std::cout << "state learned net: " << state.learned_net() << std::endl;
     ReadNetParamsFromBinaryFileOrDie(state.learned_net().c_str(), &net_param);
     this->net_->CopyTrainedLayersFrom(net_param);
   }

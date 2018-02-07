@@ -545,6 +545,7 @@ cv::Mat ApplyNoise(const cv::Mat& in_img, const NoiseParameter& param) {
     lab_image *= 1.0 / 255;
     cv::cvtColor(lab_image, out_img, CV_BGR2Lab);
   }
+
   return  out_img;
 }
 
